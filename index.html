@@ -391,8 +391,9 @@
 
   .orden-link-bar .btn {
     flex: 1;
-    font-size: 13.5px;
-    padding: 11px 10px;
+    font-size: 12.5px;
+    padding: 11px 6px;
+    white-space: nowrap;
   }
 
   .linea-form {
@@ -507,6 +508,12 @@
 </div>
 
 <div class="container">
+  <div class="orden-link-bar">
+    <button class="btn btn-primary" id="cargarOrdenBtn">📝 Cargar orden</button>
+    <button class="btn btn-secondary" id="verDeudorasBtn">Deudoras</button>
+    <button class="btn btn-secondary" id="verOrdenLink">Ver orden</button>
+  </div>
+
   <div class="search-box">
     <input type="text" id="buscador" placeholder="Buscar clienta...">
   </div>
@@ -514,13 +521,6 @@
   <div id="listaClientas">
     <div class="loader">Cargando clientas...</div>
   </div>
-
-  <div class="orden-link-bar">
-    <button class="btn btn-primary" id="cargarOrdenBtn">📝 Cargar orden del ciclo</button>
-  </div>
-
-  <div class="small-link" id="verDeudorasBtn">Ver deudoras del ciclo actual →</div>
-  <div class="small-link" id="verOrdenLink">Ver orden completa del ciclo actual →</div>
 </div>
 
 <button class="fab" id="nuevaClientaFab">+</button>
@@ -559,35 +559,10 @@
     <div class="label">Saldo total pendiente</div>
   </div>
 
-  <div class="tabs">
-    <div class="btn btn-secondary btn-block" id="nuevoPedidoBtn" style="margin-bottom:10px;">+ Nuevo pedido (ciclo actual)</div>
-  </div>
-
   <div id="historialPedidos">
     <div class="loader">Cargando historial...</div>
   </div>
 </div>
-
-<!-- ===== Sheet: Nuevo pedido ===== -->
-<div class="sheet-overlay" id="overlayNuevoPedido"></div>
-<div class="sheet" id="sheetNuevoPedido">
-  <button class="close-x" data-close="NuevoPedido">×</button>
-  <div class="sheet-handle"></div>
-  <h2>Nuevo pedido</h2>
-  <p class="clienta-meta" id="npClienteLabel"></p>
-  <div class="field">
-    <label>Ciclo</label>
-    <input type="number" id="npCiclo" inputmode="numeric">
-  </div>
-  <div class="field">
-    <label>Detalle (productos pedidos)</label>
-    <textarea id="npDetalle" rows="2" placeholder="Ej: Crema hidratante, Perfume Kaiak"></textarea>
-  </div>
-  <div class="field">
-    <label>Monto total ($)</label>
-    <input type="number" id="npMonto" inputmode="decimal" placeholder="0">
-  </div>
-  <button class="btn btn-primary btn-block" id="guardarPedidoBtn">Guardar pedido</button>
 </div>
 
 <!-- ===== Sheet: Registrar pago ===== -->
@@ -709,7 +684,6 @@
   });
   document.getElementById('overlayNuevaClienta').addEventListener('click', () => cerrarSheet('NuevaClienta'));
   document.getElementById('overlayDetalle').addEventListener('click', () => cerrarSheet('Detalle'));
-  document.getElementById('overlayNuevoPedido').addEventListener('click', () => cerrarSheet('NuevoPedido'));
   document.getElementById('overlayPago').addEventListener('click', () => cerrarSheet('Pago'));
   document.getElementById('overlayOrden').addEventListener('click', () => cerrarSheet('Orden'));
   document.getElementById('overlayVerOrden').addEventListener('click', () => cerrarSheet('VerOrden'));
@@ -750,10 +724,7 @@
     cont.innerHTML = lista.map(c => `
       <div class="card" onclick="abrirDetalleClienta('${c.id}')">
         <div class="card-row">
-          <div>
-            <p class="clienta-nombre">${c.nombre}</p>
-            <p class="clienta-meta">${c.telefono || 'Sin teléfono'}</p>
-          </div>
+          <p class="clienta-nombre">${c.nombre}</p>
         </div>
       </div>
     `).join('');
@@ -838,39 +809,6 @@
       `;
     }).join('');
   }
-
-  // ---------- Nuevo pedido ----------
-  document.getElementById('nuevoPedidoBtn').addEventListener('click', () => {
-    const clienta = clientas.find(c => c.id === clienteActualId);
-    document.getElementById('npClienteLabel').textContent = clienta.nombre;
-    document.getElementById('npCiclo').value = document.getElementById('cicloActual').value;
-    document.getElementById('npDetalle').value = '';
-    document.getElementById('npMonto').value = '';
-    abrirSheet('NuevoPedido');
-  });
-
-  document.getElementById('guardarPedidoBtn').addEventListener('click', async () => {
-    const ciclo = document.getElementById('npCiclo').value;
-    const monto = document.getElementById('npMonto').value;
-    if (!ciclo || !monto) { mostrarToast('Completá ciclo y monto'); return; }
-
-    const btn = document.getElementById('guardarPedidoBtn');
-    btn.textContent = 'Guardando...';
-    try {
-      await apiPost('crearPedido', {
-        idClienta: clienteActualId,
-        ciclo,
-        detalle: document.getElementById('npDetalle').value.trim(),
-        montoTotal: monto
-      });
-      mostrarToast('Pedido guardado');
-      cerrarSheet('NuevoPedido');
-      abrirDetalleClienta(clienteActualId);
-    } catch (err) {
-      mostrarToast('Error al guardar pedido');
-    }
-    btn.textContent = 'Guardar pedido';
-  });
 
   // ---------- Registrar pago ----------
   function abrirPago(idPedido, saldoActual, ciclo) {
