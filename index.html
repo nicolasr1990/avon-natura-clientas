@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Mis Clientas</title>
+<style>
+  :root {
+    --rosa: #C9436B;
+    --rosa-suave: #F4DDE4;
+    --crema: #FBF6F2;
+    --tinta: #2E2530;
+    --tinta-suave: #7A6E7E;
+    --verde-ok: #4C8C6B;
+    --naranja-alerta: #D88A3F;
+    --borde: #E8DEE2;
+    --blanco: #FFFFFF;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--crema);
+    color: var(--tinta);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .header {
+    background: var(--rosa);
+    color: var(--blanco);
+    padding: 18px 16px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .header h1 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 22px;
+    margin: 0 0 2px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  .header .sub {
+    font-size: 12.5px;
+    opacity: 0.9;
+    margin: 0;
+  }
+
+  .ciclo-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 8px 10px;
+  }
+
+  .ciclo-bar label {
+    font-size: 12.5px;
+    white-space: nowrap;
+  }
+
+  .ciclo-bar input {
+    width: 60px;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .container {
+    padding: 14px;
+    max-width: 480px;
+    margin: 0 auto;
+    padding-bottom: 90px;
+  }
+
+  .search-box {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .search-box input {
+    flex: 1;
+    padding: 12px 14px;
+    border: 1.5px solid var(--borde);
+    border-radius: 12px;
+    font-size: 15px;
+    background: var(--blanco);
+  }
+
+  .search-box input:focus {
+    outline: none;
+    border-color: var(--rosa);
+  }
+
+  .btn {
+    border: none;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 14.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.08s ease, opacity 0.15s ease;
+  }
+
+  .btn:active { transform: scale(0.97); }
+
+  .btn-primary { background: var(--rosa); color: var(--blanco); }
+  .btn-secondary { background: var(--rosa-suave); color: var(--rosa); }
+  .btn-block { width: 100%; }
+  .btn-ghost { background: transparent; color: var(--tinta-suave); border: 1.5px solid var(--borde); }
+
+  .card {
+    background: var(--blanco);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    border: 1px solid var(--borde);
+    cursor: pointer;
+    transition: box-shadow 0.15s ease;
+  }
+
+  .card:active { box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+
+  .card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .clienta-nombre {
+    font-weight: 600;
+    font-size: 15.5px;
+    margin: 0 0 2px;
+  }
+
+  .clienta-meta {
+    font-size: 12.5px;
+    color: var(--tinta-suave);
+    margin: 0;
+  }
+
+  .badge {
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .badge-pendiente { background: #FCE8D6; color: var(--naranja-alerta); }
+  .badge-parcial { background: #FCE8D6; color: var(--naranja-alerta); }
+  .badge-pagado { background: #DCEFE3; color: var(--verde-ok); }
+
+  .empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--tinta-suave);
+  }
+
+  .empty-state .icon { font-size: 38px; margin-bottom: 8px; }
+  .empty-state p { font-size: 14px; margin: 4px 0; }
+
+  .fab {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: var(--rosa);
+    color: var(--blanco);
+    border: none;
+    font-size: 28px;
+    box-shadow: 0 4px 14px rgba(201,67,107,0.4);
+    cursor: pointer;
+    z-index: 40;
+  }
+
+  .fab:active { transform: scale(0.95); }
+
+  /* Modal / pantalla de detalle */
+  .sheet-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(46,37,48,0.45);
+    z-index: 100;
+  }
+
+  .sheet-overlay.open { display: block; }
+
+  .sheet {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--crema);
+    border-radius: 20px 20px 0 0;
+    max-height: 88vh;
+    overflow-y: auto;
+    padding: 18px 16px 24px;
+    z-index: 101;
+    transform: translateY(100%);
+    transition: transform 0.25s ease;
+  }
+
+  .sheet.open { transform: translateY(0); }
+
+  .sheet-handle {
+    width: 40px;
+    height: 4px;
+    background: var(--borde);
+    border-radius: 4px;
+    margin: 0 auto 14px;
+  }
+
+  .sheet h2 {
+    font-family: Georgia, serif;
+    font-size: 19px;
+    margin: 0 0 4px;
+  }
+
+  .sheet .close-x {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-size: 22px;
+    color: var(--tinta-suave);
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  .field {
+    margin-bottom: 14px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--tinta-suave);
+    margin-bottom: 5px;
+  }
+
+  .field input, .field textarea, .field select {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1.5px solid var(--borde);
+    border-radius: 10px;
+    font-size: 15px;
+    background: var(--blanco);
+    font-family: inherit;
+  }
+
+  .field input:focus, .field textarea:focus, .field select:focus {
+    outline: none;
+    border-color: var(--rosa);
+  }
+
+  .saldo-grande {
+    text-align: center;
+    padding: 16px;
+    background: var(--rosa-suave);
+    border-radius: 14px;
+    margin-bottom: 16px;
+  }
+
+  .saldo-grande .monto {
+    font-family: Georgia, serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--rosa);
+  }
+
+  .saldo-grande .label {
+    font-size: 12px;
+    color: var(--tinta-suave);
+    margin-top: 2px;
+  }
+
+  .pedido-item {
+    background: var(--blanco);
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+
+  .pedido-item .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 4px;
+  }
+
+  .pedido-item .ciclo-tag {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--tinta-suave);
+    text-transform: uppercase;
+  }
+
+  .pedido-item .detalle {
+    font-size: 13.5px;
+    color: var(--tinta);
+    margin: 4px 0;
+  }
+
+  .pedido-item .monto-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-top: 6px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 9px 0;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    background: var(--blanco);
+    color: var(--tinta-suave);
+    border: 1.5px solid var(--borde);
+    cursor: pointer;
+  }
+
+  .tab.active {
+    background: var(--rosa);
+    color: var(--blanco);
+    border-color: var(--rosa);
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--tinta);
+    color: var(--blanco);
+    padding: 11px 20px;
+    border-radius: 30px;
+    font-size: 13.5px;
+    z-index: 200;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .toast.show { opacity: 1; }
+
+  .loader {
+    text-align: center;
+    padding: 30px;
+    color: var(--tinta-suave);
+    font-size: 13.5px;
+  }
+
+  .small-link {
+    text-align: center;
+    font-size: 13px;
+    color: var(--rosa);
+    margin-top: 10px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Mis Clientas</h1>
+  <p class="sub">Avon &amp; Natura · Gestión de pedidos y pagos</p>
+  <div class="ciclo-bar">
+    <label for="cicloActual">Ciclo actual</label>
+    <input type="number" id="cicloActual" value="1" inputmode="numeric">
+  </div>
+</div>
+
+<div class="container">
+  <div class="search-box">
+    <input type="text" id="buscador" placeholder="Buscar clienta...">
+  </div>
+
+  <div id="listaClientas">
+    <div class="loader">Cargando clientas...</div>
+  </div>
+
+  <div class="small-link" id="verDeudorasBtn">Ver deudoras del ciclo actual →</div>
+</div>
+
+<button class="fab" id="nuevaClientaFab">+</button>
+
+<!-- ===== Sheet: Nueva clienta ===== -->
+<div class="sheet-overlay" id="overlayNuevaClienta"></div>
+<div class="sheet" id="sheetNuevaClienta">
+  <button class="close-x" data-close="NuevaClienta">×</button>
+  <div class="sheet-handle"></div>
+  <h2>Nueva clienta</h2>
+  <div class="field">
+    <label>Nombre</label>
+    <input type="text" id="ncNombre" placeholder="Ej: María Gómez">
+  </div>
+  <div class="field">
+    <label>Teléfono (opcional)</label>
+    <input type="tel" id="ncTelefono" placeholder="Ej: 3794123456">
+  </div>
+  <div class="field">
+    <label>Notas (opcional)</label>
+    <textarea id="ncNotas" rows="2" placeholder="Ej: vive en barrio X"></textarea>
+  </div>
+  <button class="btn btn-primary btn-block" id="guardarClientaBtn">Guardar clienta</button>
+</div>
+
+<!-- ===== Sheet: Detalle de clienta ===== -->
+<div class="sheet-overlay" id="overlayDetalle"></div>
+<div class="sheet" id="sheetDetalle">
+  <button class="close-x" data-close="Detalle">×</button>
+  <div class="sheet-handle"></div>
+  <h2 id="detalleNombre">Clienta</h2>
+  <p class="clienta-meta" id="detalleTelefono"></p>
+
+  <div class="saldo-grande">
+    <div class="monto" id="detalleSaldoTotal">$0</div>
+    <div class="label">Saldo total pendiente</div>
+  </div>
+
+  <div class="tabs">
+    <div class="btn btn-secondary btn-block" id="nuevoPedidoBtn" style="margin-bottom:10px;">+ Nuevo pedido (ciclo actual)</div>
+  </div>
+
+  <div id="historialPedidos">
+    <div class="loader">Cargando historial...</div>
+  </div>
+</div>
+
+<!-- ===== Sheet: Nuevo pedido ===== -->
+<div class="sheet-overlay" id="overlayNuevoPedido"></div>
+<div class="sheet" id="sheetNuevoPedido">
+  <button class="close-x" data-close="NuevoPedido">×</button>
+  <div class="sheet-handle"></div>
+  <h2>Nuevo pedido</h2>
+  <p class="clienta-meta" id="npClienteLabel"></p>
+  <div class="field">
+    <label>Ciclo</label>
+    <input type="number" id="npCiclo" inputmode="numeric">
+  </div>
+  <div class="field">
+    <label>Detalle (productos pedidos)</label>
+    <textarea id="npDetalle" rows="2" placeholder="Ej: Crema hidratante, Perfume Kaiak"></textarea>
+  </div>
+  <div class="field">
+    <label>Monto total ($)</label>
+    <input type="number" id="npMonto" inputmode="decimal" placeholder="0">
+  </div>
+  <button class="btn btn-primary btn-block" id="guardarPedidoBtn">Guardar pedido</button>
+</div>
+
+<!-- ===== Sheet: Registrar pago ===== -->
+<div class="sheet-overlay" id="overlayPago"></div>
+<div class="sheet" id="sheetPago">
+  <button class="close-x" data-close="Pago">×</button>
+  <div class="sheet-handle"></div>
+  <h2>Registrar pago</h2>
+  <p class="clienta-meta" id="pagoPedidoLabel"></p>
+  <div class="saldo-grande">
+    <div class="monto" id="pagoSaldoActual">$0</div>
+    <div class="label">Saldo pendiente de este pedido</div>
+  </div>
+  <div class="field">
+    <label>Monto que paga ahora ($)</label>
+    <input type="number" id="pagoMonto" inputmode="decimal" placeholder="Puede ser parcial">
+  </div>
+  <div class="field">
+    <label>Notas (opcional)</label>
+    <input type="text" id="pagoNotas" placeholder="Ej: pagó en efectivo">
+  </div>
+  <button class="btn btn-primary btn-block" id="guardarPagoBtn">Guardar pago</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ⚠️ Reemplazar con la URL real del deploy de Apps Script
+  const API_URL = 'https://script.google.com/macros/s/AKfycby2DYYT-vEi9lPm0cNBHKNFQWRjFECKL30nQTfGddoZFKZnWYbbwZuGsBObWPfz3o51QQ/exec';
+
+  let clientas = [];
+  let clienteActualId = null;
+  let pedidoActualId = null;
+
+  // ---------- Utilidades ----------
+  function formatoMoneda(num) {
+    return '$' + Number(num).toLocaleString('es-AR', { minimumFractionDigits: 0 });
+  }
+
+  function mostrarToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  function abrirSheet(nombre) {
+    document.getElementById('overlay' + nombre).classList.add('open');
+    document.getElementById('sheet' + nombre).classList.add('open');
+  }
+
+  function cerrarSheet(nombre) {
+    document.getElementById('overlay' + nombre).classList.remove('open');
+    document.getElementById('sheet' + nombre).classList.remove('open');
+  }
+
+  document.querySelectorAll('[data-close]').forEach(btn => {
+    btn.addEventListener('click', () => cerrarSheet(btn.dataset.close));
+  });
+  document.getElementById('overlayNuevaClienta').addEventListener('click', () => cerrarSheet('NuevaClienta'));
+  document.getElementById('overlayDetalle').addEventListener('click', () => cerrarSheet('Detalle'));
+  document.getElementById('overlayNuevoPedido').addEventListener('click', () => cerrarSheet('NuevoPedido'));
+  document.getElementById('overlayPago').addEventListener('click', () => cerrarSheet('Pago'));
+
+  // ---------- API calls ----------
+  async function apiGet(action, params = {}) {
+    const query = new URLSearchParams({ action, ...params }).toString();
+    const res = await fetch(`${API_URL}?${query}`);
+    return res.json();
+  }
+
+  async function apiPost(action, data = {}) {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action, ...data })
+    });
+    return res.json();
+  }
+
+  // ---------- Cargar y renderizar clientas ----------
+  async function cargarClientas() {
+    try {
+      clientas = await apiGet('listarClientas');
+      renderListaClientas(clientas);
+    } catch (err) {
+      document.getElementById('listaClientas').innerHTML =
+        '<div class="empty-state"><div class="icon">⚠️</div><p>No se pudo conectar. Revisá tu conexión.</p></div>';
+    }
+  }
+
+  function renderListaClientas(lista) {
+    const cont = document.getElementById('listaClientas');
+    if (lista.length === 0) {
+      cont.innerHTML = '<div class="empty-state"><div class="icon">🌸</div><p>Todavía no agregaste clientas.</p><p>Tocá el botón + para sumar la primera.</p></div>';
+      return;
+    }
+    cont.innerHTML = lista.map(c => `
+      <div class="card" onclick="abrirDetalleClienta('${c.id}')">
+        <div class="card-row">
+          <div>
+            <p class="clienta-nombre">${c.nombre}</p>
+            <p class="clienta-meta">${c.telefono || 'Sin teléfono'}</p>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('buscador').addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase();
+    renderListaClientas(clientas.filter(c => c.nombre.toLowerCase().includes(q)));
+  });
+
+  // ---------- Nueva clienta ----------
+  document.getElementById('nuevaClientaFab').addEventListener('click', () => {
+    document.getElementById('ncNombre').value = '';
+    document.getElementById('ncTelefono').value = '';
+    document.getElementById('ncNotas').value = '';
+    abrirSheet('NuevaClienta');
+  });
+
+  document.getElementById('guardarClientaBtn').addEventListener('click', async () => {
+    const nombre = document.getElementById('ncNombre').value.trim();
+    if (!nombre) { mostrarToast('Falta el nombre'); return; }
+
+    const btn = document.getElementById('guardarClientaBtn');
+    btn.textContent = 'Guardando...';
+    try {
+      await apiPost('crearClienta', {
+        nombre,
+        telefono: document.getElementById('ncTelefono').value.trim(),
+        notas: document.getElementById('ncNotas').value.trim()
+      });
+      mostrarToast('Clienta guardada');
+      cerrarSheet('NuevaClienta');
+      cargarClientas();
+    } catch (err) {
+      mostrarToast('Error al guardar');
+    }
+    btn.textContent = 'Guardar clienta';
+  });
+
+  // ---------- Detalle de clienta ----------
+  async function abrirDetalleClienta(idClienta) {
+    clienteActualId = idClienta;
+    const clienta = clientas.find(c => c.id === idClienta);
+    document.getElementById('detalleNombre').textContent = clienta.nombre;
+    document.getElementById('detalleTelefono').textContent = clienta.telefono || '';
+    document.getElementById('historialPedidos').innerHTML = '<div class="loader">Cargando historial...</div>';
+    abrirSheet('Detalle');
+
+    try {
+      const pedidos = await apiGet('historialClienta', { idClienta });
+      renderHistorial(pedidos);
+    } catch (err) {
+      document.getElementById('historialPedidos').innerHTML = '<div class="loader">Error al cargar historial.</div>';
+    }
+  }
+
+  function renderHistorial(pedidos) {
+    const saldoTotal = pedidos.reduce((sum, p) => sum + Number(p.saldoPendiente), 0);
+    document.getElementById('detalleSaldoTotal').textContent = formatoMoneda(saldoTotal);
+
+    const cont = document.getElementById('historialPedidos');
+    if (pedidos.length === 0) {
+      cont.innerHTML = '<div class="empty-state"><p>Esta clienta no tiene pedidos todavía.</p></div>';
+      return;
+    }
+
+    cont.innerHTML = pedidos.map(p => {
+      const badgeClass = p.estado === 'Pagado' ? 'badge-pagado' : (p.estado === 'Parcial' ? 'badge-parcial' : 'badge-pendiente');
+      return `
+        <div class="pedido-item">
+          <div class="top-row">
+            <span class="ciclo-tag">Ciclo ${p.ciclo}</span>
+            <span class="badge ${badgeClass}">${p.estado}</span>
+          </div>
+          <p class="detalle">${p.detalle || 'Sin detalle'}</p>
+          <div class="monto-row">
+            <span>Total: ${formatoMoneda(p.montoTotal)}</span>
+            <span>Saldo: ${formatoMoneda(p.saldoPendiente)}</span>
+          </div>
+          ${p.saldoPendiente > 0 ? `<button class="btn btn-secondary btn-block" style="margin-top:10px;" onclick="abrirPago('${p.id}', ${p.saldoPendiente}, '${p.ciclo}')">Registrar pago</button>` : ''}
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ---------- Nuevo pedido ----------
+  document.getElementById('nuevoPedidoBtn').addEventListener('click', () => {
+    const clienta = clientas.find(c => c.id === clienteActualId);
+    document.getElementById('npClienteLabel').textContent = clienta.nombre;
+    document.getElementById('npCiclo').value = document.getElementById('cicloActual').value;
+    document.getElementById('npDetalle').value = '';
+    document.getElementById('npMonto').value = '';
+    abrirSheet('NuevoPedido');
+  });
+
+  document.getElementById('guardarPedidoBtn').addEventListener('click', async () => {
+    const ciclo = document.getElementById('npCiclo').value;
+    const monto = document.getElementById('npMonto').value;
+    if (!ciclo || !monto) { mostrarToast('Completá ciclo y monto'); return; }
+
+    const btn = document.getElementById('guardarPedidoBtn');
+    btn.textContent = 'Guardando...';
+    try {
+      await apiPost('crearPedido', {
+        idClienta: clienteActualId,
+        ciclo,
+        detalle: document.getElementById('npDetalle').value.trim(),
+        montoTotal: monto
+      });
+      mostrarToast('Pedido guardado');
+      cerrarSheet('NuevoPedido');
+      abrirDetalleClienta(clienteActualId);
+    } catch (err) {
+      mostrarToast('Error al guardar pedido');
+    }
+    btn.textContent = 'Guardar pedido';
+  });
+
+  // ---------- Registrar pago ----------
+  function abrirPago(idPedido, saldoActual, ciclo) {
+    pedidoActualId = idPedido;
+    document.getElementById('pagoPedidoLabel').textContent = `Pedido del ciclo ${ciclo}`;
+    document.getElementById('pagoSaldoActual').textContent = formatoMoneda(saldoActual);
+    document.getElementById('pagoMonto').value = '';
+    document.getElementById('pagoNotas').value = '';
+    document.getElementById('pagoMonto').max = saldoActual;
+    abrirSheet('Pago');
+  }
+
+  document.getElementById('guardarPagoBtn').addEventListener('click', async () => {
+    const monto = document.getElementById('pagoMonto').value;
+    if (!monto || Number(monto) <= 0) { mostrarToast('Ingresá un monto válido'); return; }
+
+    const btn = document.getElementById('guardarPagoBtn');
+    btn.textContent = 'Guardando...';
+    try {
+      await apiPost('registrarPago', {
+        idPedido: pedidoActualId,
+        montoPagado: monto,
+        notas: document.getElementById('pagoNotas').value.trim()
+      });
+      mostrarToast('Pago registrado');
+      cerrarSheet('Pago');
+      abrirDetalleClienta(clienteActualId);
+    } catch (err) {
+      mostrarToast('Error al registrar pago');
+    }
+    btn.textContent = 'Guardar pago';
+  });
+
+  // ---------- Deudoras del ciclo ----------
+  document.getElementById('verDeudorasBtn').addEventListener('click', async () => {
+    const ciclo = document.getElementById('cicloActual').value;
+    try {
+      const deudoras = await apiGet('deudorasCiclo', { ciclo });
+      if (deudoras.length === 0) {
+        mostrarToast('Nadie debe en este ciclo 🎉');
+        return;
+      }
+      const nombres = deudoras.map(d => {
+        const cli = clientas.find(c => c.id === d.idClienta);
+        return `${cli ? cli.nombre : '?'}: ${formatoMoneda(d.saldoPendiente)}`;
+      }).join('\n');
+      alert(`Deudoras del ciclo ${ciclo}:\n\n${nombres}`);
+    } catch (err) {
+      mostrarToast('Error al consultar deudoras');
+    }
+  });
+
+  // ---------- Inicio ----------
+  cargarClientas();
+</script>
+
+</body>
+</html>
