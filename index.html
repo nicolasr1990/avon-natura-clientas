@@ -381,6 +381,118 @@
     cursor: pointer;
     font-weight: 600;
   }
+
+  /* ===== Pantalla Cargar Orden ===== */
+  .orden-link-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .orden-link-bar .btn {
+    flex: 1;
+    font-size: 13.5px;
+    padding: 11px 10px;
+  }
+
+  .linea-form {
+    background: var(--blanco);
+    border: 1.5px solid var(--borde);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+
+  .linea-form .campo-clienta {
+    position: relative;
+  }
+
+  .resumen-orden {
+    background: var(--rosa-suave);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+  }
+
+  .resumen-orden .total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .resumen-orden .total-row .label {
+    font-size: 12.5px;
+    color: var(--tinta-suave);
+  }
+
+  .resumen-orden .total-row .monto {
+    font-family: Georgia, serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--rosa);
+  }
+
+  .linea-cargada {
+    background: var(--blanco);
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    padding: 11px 13px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .linea-cargada .info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .linea-cargada .cliente-nombre {
+    font-size: 13.5px;
+    font-weight: 600;
+    margin: 0 0 2px;
+  }
+
+  .linea-cargada .producto-info {
+    font-size: 12px;
+    color: var(--tinta-suave);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .linea-cargada .monto-linea {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--tinta);
+    white-space: nowrap;
+  }
+
+  .linea-cargada .borrar-linea {
+    background: none;
+    border: none;
+    color: var(--tinta-suave);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 2px 4px;
+  }
+
+  .grupo-clienta-header {
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--tinta-suave);
+    margin: 14px 0 6px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .grupo-clienta-header .subtotal {
+    color: var(--rosa);
+  }
 </style>
 </head>
 <body>
@@ -403,7 +515,12 @@
     <div class="loader">Cargando clientas...</div>
   </div>
 
+  <div class="orden-link-bar">
+    <button class="btn btn-primary" id="cargarOrdenBtn">📝 Cargar orden del ciclo</button>
+  </div>
+
   <div class="small-link" id="verDeudorasBtn">Ver deudoras del ciclo actual →</div>
+  <div class="small-link" id="verOrdenLink">Ver orden completa del ciclo actual →</div>
 </div>
 
 <button class="fab" id="nuevaClientaFab">+</button>
@@ -495,6 +612,66 @@
   <button class="btn btn-primary btn-block" id="guardarPagoBtn">Guardar pago</button>
 </div>
 
+<!-- ===== Sheet: Cargar orden del ciclo ===== -->
+<div class="sheet-overlay" id="overlayOrden"></div>
+<div class="sheet" id="sheetOrden" style="max-height: 92vh;">
+  <button class="close-x" data-close="Orden">×</button>
+  <div class="sheet-handle"></div>
+  <h2>Cargar orden del ciclo</h2>
+
+  <div class="field">
+    <label>Ciclo</label>
+    <input type="number" id="ordenCiclo" inputmode="numeric">
+  </div>
+
+  <div class="resumen-orden">
+    <div class="total-row">
+      <span class="label">Total de la orden</span>
+      <span class="monto" id="ordenTotalGeneral">$0</span>
+    </div>
+  </div>
+
+  <div class="linea-form">
+    <div class="field campo-clienta">
+      <label>Clienta</label>
+      <input type="text" id="lineaClienteInput" list="listaClientasDatalist" placeholder="Escribí o elegí una clienta">
+      <datalist id="listaClientasDatalist"></datalist>
+    </div>
+    <div class="field">
+      <label>Código</label>
+      <input type="text" id="lineaCodigo" placeholder="Ej: 7892">
+    </div>
+    <div class="field">
+      <label>Detalle del producto</label>
+      <input type="text" id="lineaDetalle" placeholder="Ej: Crema hidratante 200ml">
+    </div>
+    <div class="field">
+      <label>Monto ($)</label>
+      <input type="number" id="lineaMonto" inputmode="decimal" placeholder="0">
+    </div>
+    <button class="btn btn-primary btn-block" id="agregarLineaBtn">+ Agregar línea</button>
+  </div>
+
+  <div id="lineasOrdenLista"></div>
+
+  <button class="btn btn-secondary btn-block" id="cerrarOrdenBtn" style="margin-top: 16px;">Guardar orden completa</button>
+</div>
+
+<!-- ===== Sheet: Ver orden de un ciclo (consulta) ===== -->
+<div class="sheet-overlay" id="overlayVerOrden"></div>
+<div class="sheet" id="sheetVerOrden">
+  <button class="close-x" data-close="VerOrden">×</button>
+  <div class="sheet-handle"></div>
+  <h2 id="verOrdenTitulo">Orden del ciclo</h2>
+  <div class="resumen-orden">
+    <div class="total-row">
+      <span class="label">Total general</span>
+      <span class="monto" id="verOrdenTotal">$0</span>
+    </div>
+  </div>
+  <div id="verOrdenContenido"></div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -534,6 +711,8 @@
   document.getElementById('overlayDetalle').addEventListener('click', () => cerrarSheet('Detalle'));
   document.getElementById('overlayNuevoPedido').addEventListener('click', () => cerrarSheet('NuevoPedido'));
   document.getElementById('overlayPago').addEventListener('click', () => cerrarSheet('Pago'));
+  document.getElementById('overlayOrden').addEventListener('click', () => cerrarSheet('Orden'));
+  document.getElementById('overlayVerOrden').addEventListener('click', () => cerrarSheet('VerOrden'));
 
   // ---------- API calls ----------
   async function apiGet(action, params = {}) {
@@ -555,6 +734,7 @@
     try {
       clientas = await apiGet('listarClientas');
       renderListaClientas(clientas);
+      poblarDatalistClientas();
     } catch (err) {
       document.getElementById('listaClientas').innerHTML =
         '<div class="empty-state"><div class="icon">⚠️</div><p>No se pudo conectar. Revisá tu conexión.</p></div>';
@@ -743,7 +923,176 @@
     }
   });
 
+  // ---------- Cargar orden del ciclo ----------
+  let lineasOrdenActual = []; // líneas ya cargadas en esta sesión (visual, antes de guardar)
+  let ultimaClienteUsada = '';
+
+  function poblarDatalistClientas() {
+    const dl = document.getElementById('listaClientasDatalist');
+    dl.innerHTML = clientas.map(c => `<option value="${c.nombre}" data-id="${c.id}">`).join('');
+  }
+
+  function buscarClientePorNombre(nombre) {
+    return clientas.find(c => c.nombre.toLowerCase() === nombre.trim().toLowerCase());
+  }
+
+  document.getElementById('cargarOrdenBtn').addEventListener('click', () => {
+    poblarDatalistClientas();
+    document.getElementById('ordenCiclo').value = document.getElementById('cicloActual').value;
+    document.getElementById('lineaClienteInput').value = ultimaClienteUsada;
+    document.getElementById('lineaCodigo').value = '';
+    document.getElementById('lineaDetalle').value = '';
+    document.getElementById('lineaMonto').value = '';
+    lineasOrdenActual = [];
+    renderLineasOrden();
+    abrirSheet('Orden');
+  });
+
+  function renderLineasOrden() {
+    const cont = document.getElementById('lineasOrdenLista');
+    const totalGeneral = lineasOrdenActual.reduce((sum, l) => sum + Number(l.monto), 0);
+    document.getElementById('ordenTotalGeneral').textContent = formatoMoneda(totalGeneral);
+
+    if (lineasOrdenActual.length === 0) {
+      cont.innerHTML = '<div class="empty-state"><p>Todavía no agregaste líneas.</p></div>';
+      return;
+    }
+
+    // Agrupar por clienta para mostrar subtotales
+    const porClienta = {};
+    lineasOrdenActual.forEach(l => {
+      if (!porClienta[l.nombreClienta]) porClienta[l.nombreClienta] = [];
+      porClienta[l.nombreClienta].push(l);
+    });
+
+    let html = '';
+    Object.keys(porClienta).forEach(nombre => {
+      const lineas = porClienta[nombre];
+      const subtotal = lineas.reduce((sum, l) => sum + Number(l.monto), 0);
+      html += `<div class="grupo-clienta-header"><span>${nombre}</span><span class="subtotal">${formatoMoneda(subtotal)}</span></div>`;
+      lineas.forEach(l => {
+        html += `
+          <div class="linea-cargada">
+            <div class="info">
+              <p class="producto-info">${l.codigo ? l.codigo + ' · ' : ''}${l.detalle || 'Sin detalle'}</p>
+            </div>
+            <span class="monto-linea">${formatoMoneda(l.monto)}</span>
+            <button class="borrar-linea" onclick="borrarLineaTemp('${l.tempId}')">×</button>
+          </div>
+        `;
+      });
+    });
+    cont.innerHTML = html;
+  }
+
+  function borrarLineaTemp(tempId) {
+    lineasOrdenActual = lineasOrdenActual.filter(l => l.tempId !== tempId);
+    renderLineasOrden();
+  }
+
+  document.getElementById('agregarLineaBtn').addEventListener('click', async () => {
+    const nombreInput = document.getElementById('lineaClienteInput').value.trim();
+    const codigo = document.getElementById('lineaCodigo').value.trim();
+    const detalle = document.getElementById('lineaDetalle').value.trim();
+    const monto = document.getElementById('lineaMonto').value;
+    const ciclo = document.getElementById('ordenCiclo').value;
+
+    if (!nombreInput) { mostrarToast('Falta elegir la clienta'); return; }
+    if (!monto || Number(monto) <= 0) { mostrarToast('Falta el monto'); return; }
+    if (!ciclo) { mostrarToast('Falta el ciclo'); return; }
+
+    const clienta = buscarClientePorNombre(nombreInput);
+    if (!clienta) { mostrarToast('Esa clienta no existe, revisá el nombre'); return; }
+
+    const btn = document.getElementById('agregarLineaBtn');
+    btn.textContent = 'Agregando...';
+    try {
+      const res = await apiPost('agregarLineaOrden', {
+        ciclo, idClienta: clienta.id, codigo, detalle, monto
+      });
+
+      lineasOrdenActual.push({
+        tempId: res.id || ('tmp_' + Date.now()),
+        idClienta: clienta.id,
+        nombreClienta: clienta.nombre,
+        codigo, detalle, monto
+      });
+
+      ultimaClienteUsada = clienta.nombre;
+      // Mantenemos la clienta cargada para agregar el siguiente producto rápido,
+      // pero limpiamos código/detalle/monto para la próxima línea.
+      document.getElementById('lineaCodigo').value = '';
+      document.getElementById('lineaDetalle').value = '';
+      document.getElementById('lineaMonto').value = '';
+      document.getElementById('lineaCodigo').focus();
+
+      renderLineasOrden();
+      mostrarToast('Línea agregada');
+    } catch (err) {
+      mostrarToast('Error al agregar línea');
+    }
+    btn.textContent = '+ Agregar línea';
+  });
+
+  document.getElementById('cerrarOrdenBtn').addEventListener('click', async () => {
+    const ciclo = document.getElementById('ordenCiclo').value;
+    if (!ciclo) { mostrarToast('Falta el ciclo'); return; }
+    if (lineasOrdenActual.length === 0) { mostrarToast('No hay líneas cargadas'); return; }
+
+    const btn = document.getElementById('cerrarOrdenBtn');
+    btn.textContent = 'Guardando...';
+    try {
+      const res = await apiPost('cerrarOrdenCiclo', { ciclo });
+      mostrarToast(`Orden guardada · Total ${formatoMoneda(res.totalGeneral)}`);
+      cerrarSheet('Orden');
+    } catch (err) {
+      mostrarToast('Error al guardar la orden');
+    }
+    btn.textContent = 'Guardar orden completa';
+  });
+
+  // ---------- Ver orden de un ciclo (consulta) ----------
+  async function verOrdenDeCiclo(ciclo) {
+    document.getElementById('verOrdenTitulo').textContent = `Orden del ciclo ${ciclo}`;
+    document.getElementById('verOrdenContenido').innerHTML = '<div class="loader">Cargando...</div>';
+    abrirSheet('VerOrden');
+
+    try {
+      const orden = await apiGet('verOrdenCiclo', { ciclo });
+      document.getElementById('verOrdenTotal').textContent = formatoMoneda(orden.totalGeneral);
+
+      if (orden.clientas.length === 0) {
+        document.getElementById('verOrdenContenido').innerHTML = '<div class="empty-state"><p>No hay líneas cargadas en este ciclo.</p></div>';
+        return;
+      }
+
+      let html = '';
+      orden.clientas.forEach(grupo => {
+        const cli = clientas.find(c => c.id === grupo.idClienta);
+        html += `<div class="grupo-clienta-header"><span>${cli ? cli.nombre : '?'}</span><span class="subtotal">${formatoMoneda(grupo.subtotal)}</span></div>`;
+        grupo.lineas.forEach(l => {
+          html += `
+            <div class="linea-cargada">
+              <div class="info">
+                <p class="producto-info">${l.codigo ? l.codigo + ' · ' : ''}${l.detalle || 'Sin detalle'}</p>
+              </div>
+              <span class="monto-linea">${formatoMoneda(l.monto)}</span>
+            </div>
+          `;
+        });
+      });
+      document.getElementById('verOrdenContenido').innerHTML = html;
+    } catch (err) {
+      document.getElementById('verOrdenContenido').innerHTML = '<div class="loader">Error al cargar la orden.</div>';
+    }
+  }
+
   // ---------- Inicio ----------
+  document.getElementById('verOrdenLink').addEventListener('click', () => {
+    const ciclo = document.getElementById('cicloActual').value;
+    verOrdenDeCiclo(ciclo);
+  });
+
   cargarClientas();
 </script>
 
