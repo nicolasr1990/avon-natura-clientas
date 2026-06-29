@@ -54,25 +54,47 @@
   .ciclo-bar {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     margin-top: 12px;
     background: rgba(255,255,255,0.15);
     border-radius: 10px;
     padding: 8px 10px;
+    flex-wrap: wrap;
   }
 
   .ciclo-bar label {
     font-size: 12.5px;
     white-space: nowrap;
+    width: 100%;
+    margin-bottom: 2px;
   }
 
-  .ciclo-bar input {
-    width: 60px;
+  .ciclo-bar input, .ciclo-bar select {
     border: none;
     border-radius: 6px;
     padding: 6px 8px;
     font-size: 14px;
     text-align: center;
+    font-family: inherit;
+  }
+
+  .ciclo-bar input#cicloNumero {
+    width: 50px;
+  }
+
+  .ciclo-bar select#cicloMes {
+    width: 92px;
+  }
+
+  .ciclo-bar input#cicloAnio {
+    width: 56px;
+  }
+
+  .ciclo-bar .preview {
+    width: 100%;
+    font-size: 12px;
+    opacity: 0.9;
+    margin-top: 4px;
   }
 
   .container {
@@ -502,8 +524,24 @@
   <h1>Mis Clientas</h1>
   <p class="sub">Avon &amp; Natura · Gestión de pedidos y pagos</p>
   <div class="ciclo-bar">
-    <label for="cicloActual">Ciclo actual</label>
-    <input type="number" id="cicloActual" value="1" inputmode="numeric">
+    <label>Ciclo actual</label>
+    <input type="number" id="cicloNumero" value="1" inputmode="numeric" placeholder="N°">
+    <select id="cicloMes">
+      <option value="ENE">ENE</option>
+      <option value="FEB">FEB</option>
+      <option value="MAR">MAR</option>
+      <option value="ABR">ABR</option>
+      <option value="MAY">MAY</option>
+      <option value="JUN">JUN</option>
+      <option value="JUL">JUL</option>
+      <option value="AGO">AGO</option>
+      <option value="SEP">SEP</option>
+      <option value="OCT">OCT</option>
+      <option value="NOV">NOV</option>
+      <option value="DIC">DIC</option>
+    </select>
+    <input type="number" id="cicloAnio" value="26" inputmode="numeric" placeholder="AA">
+    <div class="preview" id="cicloPreview">Ciclo 1 - ENE/26</div>
   </div>
 </div>
 
@@ -593,11 +631,7 @@
   <button class="close-x" data-close="Orden">×</button>
   <div class="sheet-handle"></div>
   <h2>Cargar orden del ciclo</h2>
-
-  <div class="field">
-    <label>Ciclo</label>
-    <input type="number" id="ordenCiclo" inputmode="numeric">
-  </div>
+  <p class="clienta-meta" id="ordenCicloLabel" style="margin-bottom: 14px;"></p>
 
   <div class="resumen-orden">
     <div class="total-row">
@@ -687,6 +721,25 @@
   document.getElementById('overlayPago').addEventListener('click', () => cerrarSheet('Pago'));
   document.getElementById('overlayOrden').addEventListener('click', () => cerrarSheet('Orden'));
   document.getElementById('overlayVerOrden').addEventListener('click', () => cerrarSheet('VerOrden'));
+
+  // ---------- Ciclo actual (número + mes + año) ----------
+  // El ciclo se guarda como texto compuesto, ej: "Ciclo 1 - ENE/26", para que
+  // no se mezclen ciclos del mismo número de distintas rondas/años.
+  function obtenerCicloActual() {
+    const num = document.getElementById('cicloNumero').value || '1';
+    const mes = document.getElementById('cicloMes').value;
+    const anio = document.getElementById('cicloAnio').value || '26';
+    return `Ciclo ${num} - ${mes}/${anio}`;
+  }
+
+  function actualizarPreviewCiclo() {
+    document.getElementById('cicloPreview').textContent = obtenerCicloActual();
+  }
+
+  ['cicloNumero', 'cicloMes', 'cicloAnio'].forEach(id => {
+    document.getElementById(id).addEventListener('input', actualizarPreviewCiclo);
+    document.getElementById(id).addEventListener('change', actualizarPreviewCiclo);
+  });
 
   // ---------- API calls ----------
   async function apiGet(action, params = {}) {
@@ -844,7 +897,7 @@
 
   // ---------- Deudoras del ciclo ----------
   document.getElementById('verDeudorasBtn').addEventListener('click', async () => {
-    const ciclo = document.getElementById('cicloActual').value;
+    const ciclo = obtenerCicloActual();
     try {
       const deudoras = await apiGet('deudorasCiclo', { ciclo });
       if (deudoras.length === 0) {
@@ -876,7 +929,7 @@
 
   document.getElementById('cargarOrdenBtn').addEventListener('click', () => {
     poblarDatalistClientas();
-    document.getElementById('ordenCiclo').value = document.getElementById('cicloActual').value;
+    document.getElementById('ordenCicloLabel').textContent = obtenerCicloActual();
     document.getElementById('lineaClienteInput').value = ultimaClienteUsada;
     document.getElementById('lineaCodigo').value = '';
     document.getElementById('lineaDetalle').value = '';
@@ -933,12 +986,10 @@
     const codigo = document.getElementById('lineaCodigo').value.trim();
     const detalle = document.getElementById('lineaDetalle').value.trim();
     const monto = document.getElementById('lineaMonto').value;
-    const ciclo = document.getElementById('ordenCiclo').value;
+    const ciclo = obtenerCicloActual();
 
     if (!nombreInput) { mostrarToast('Falta elegir la clienta'); return; }
     if (!monto || Number(monto) <= 0) { mostrarToast('Falta el monto'); return; }
-    if (!ciclo) { mostrarToast('Falta el ciclo'); return; }
-
     const clienta = buscarClientePorNombre(nombreInput);
     if (!clienta) { mostrarToast('Esa clienta no existe, revisá el nombre'); return; }
 
@@ -973,8 +1024,7 @@
   });
 
   document.getElementById('cerrarOrdenBtn').addEventListener('click', async () => {
-    const ciclo = document.getElementById('ordenCiclo').value;
-    if (!ciclo) { mostrarToast('Falta el ciclo'); return; }
+    const ciclo = obtenerCicloActual();
     if (lineasOrdenActual.length === 0) { mostrarToast('No hay líneas cargadas'); return; }
 
     const btn = document.getElementById('cerrarOrdenBtn');
@@ -1027,10 +1077,10 @@
 
   // ---------- Inicio ----------
   document.getElementById('verOrdenLink').addEventListener('click', () => {
-    const ciclo = document.getElementById('cicloActual').value;
-    verOrdenDeCiclo(ciclo);
+    verOrdenDeCiclo(obtenerCicloActual());
   });
 
+  actualizarPreviewCiclo();
   cargarClientas();
 </script>
 
