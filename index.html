@@ -69,7 +69,7 @@
     margin-bottom: 2px;
   }
 
-  .ciclo-bar input, .ciclo-bar select {
+  .ciclo-bar input {
     border: none;
     border-radius: 6px;
     padding: 6px 8px;
@@ -78,16 +78,12 @@
     font-family: inherit;
   }
 
-  .ciclo-bar input#cicloNumero {
-    width: 50px;
-  }
+  .ciclo-bar input#cicloNumero { width: 55px; }
+  .ciclo-bar input#cicloAnio { width: 65px; }
 
-  .ciclo-bar select#cicloMes {
-    width: 92px;
-  }
-
-  .ciclo-bar input#cicloAnio {
-    width: 56px;
+  .ciclo-bar .sep {
+    font-size: 14px;
+    opacity: 0.8;
   }
 
   .ciclo-bar .preview {
@@ -525,23 +521,10 @@
   <p class="sub">Avon &amp; Natura · Gestión de pedidos y pagos</p>
   <div class="ciclo-bar">
     <label>Ciclo actual</label>
-    <input type="number" id="cicloNumero" value="1" inputmode="numeric" placeholder="N°">
-    <select id="cicloMes">
-      <option value="ENE">ENE</option>
-      <option value="FEB">FEB</option>
-      <option value="MAR">MAR</option>
-      <option value="ABR">ABR</option>
-      <option value="MAY">MAY</option>
-      <option value="JUN">JUN</option>
-      <option value="JUL">JUL</option>
-      <option value="AGO">AGO</option>
-      <option value="SEP">SEP</option>
-      <option value="OCT">OCT</option>
-      <option value="NOV">NOV</option>
-      <option value="DIC">DIC</option>
-    </select>
-    <input type="number" id="cicloAnio" value="26" inputmode="numeric" placeholder="AA">
-    <div class="preview" id="cicloPreview">Ciclo 1 - ENE/26</div>
+    <input type="number" id="cicloNumero" value="9" inputmode="numeric" placeholder="N°">
+    <span class="sep">·</span>
+    <input type="number" id="cicloAnio" value="2026" inputmode="numeric" placeholder="Año">
+    <div class="preview" id="cicloPreview">Ciclo 9 - 2026</div>
   </div>
 </div>
 
@@ -655,6 +638,10 @@
       <input type="text" id="lineaDetalle" placeholder="Ej: Crema hidratante 200ml">
     </div>
     <div class="field">
+      <label>Cantidad</label>
+      <input type="number" id="lineaCantidad" value="1" inputmode="numeric" min="1">
+    </div>
+    <div class="field">
       <label>Monto ($)</label>
       <input type="number" id="lineaMonto" inputmode="decimal" placeholder="0">
     </div>
@@ -726,17 +713,16 @@
   // El ciclo se guarda como texto compuesto, ej: "Ciclo 1 - ENE/26", para que
   // no se mezclen ciclos del mismo número de distintas rondas/años.
   function obtenerCicloActual() {
-    const num = document.getElementById('cicloNumero').value || '1';
-    const mes = document.getElementById('cicloMes').value;
-    const anio = document.getElementById('cicloAnio').value || '26';
-    return `Ciclo ${num} - ${mes}/${anio}`;
+    const num = document.getElementById('cicloNumero').value || '9';
+    const anio = document.getElementById('cicloAnio').value || '2026';
+    return `Ciclo ${num} - ${anio}`;
   }
 
   function actualizarPreviewCiclo() {
     document.getElementById('cicloPreview').textContent = obtenerCicloActual();
   }
 
-  ['cicloNumero', 'cicloMes', 'cicloAnio'].forEach(id => {
+  ['cicloNumero', 'cicloAnio'].forEach(id => {
     document.getElementById(id).addEventListener('input', actualizarPreviewCiclo);
     document.getElementById(id).addEventListener('change', actualizarPreviewCiclo);
   });
@@ -965,7 +951,7 @@
         html += `
           <div class="linea-cargada">
             <div class="info">
-              <p class="producto-info">${l.codigo ? l.codigo + ' · ' : ''}${l.detalle || 'Sin detalle'}</p>
+              <p class="producto-info">${l.codigo ? l.codigo + ' · ' : ''}${l.detalle || 'Sin detalle'} · x${l.cantidad || 1}</p>
             </div>
             <span class="monto-linea">${formatoMoneda(l.monto)}</span>
             <button class="borrar-linea" onclick="borrarLineaTemp('${l.tempId}')">×</button>
@@ -985,6 +971,7 @@
     const nombreInput = document.getElementById('lineaClienteInput').value.trim();
     const codigo = document.getElementById('lineaCodigo').value.trim();
     const detalle = document.getElementById('lineaDetalle').value.trim();
+    const cantidad = document.getElementById('lineaCantidad').value || '1';
     const monto = document.getElementById('lineaMonto').value;
     const ciclo = obtenerCicloActual();
 
@@ -997,14 +984,14 @@
     btn.textContent = 'Agregando...';
     try {
       const res = await apiPost('agregarLineaOrden', {
-        ciclo, idClienta: clienta.id, codigo, detalle, monto
+        ciclo, idClienta: clienta.id, codigo, detalle, cantidad, monto
       });
 
       lineasOrdenActual.push({
         tempId: res.id || ('tmp_' + Date.now()),
         idClienta: clienta.id,
         nombreClienta: clienta.nombre,
-        codigo, detalle, monto
+        codigo, detalle, cantidad, monto
       });
 
       ultimaClienteUsada = clienta.nombre;
@@ -1012,6 +999,7 @@
       // pero limpiamos código/detalle/monto para la próxima línea.
       document.getElementById('lineaCodigo').value = '';
       document.getElementById('lineaDetalle').value = '';
+      document.getElementById('lineaCantidad').value = '1';
       document.getElementById('lineaMonto').value = '';
       document.getElementById('lineaCodigo').focus();
 
@@ -1062,7 +1050,7 @@
           html += `
             <div class="linea-cargada">
               <div class="info">
-                <p class="producto-info">${l.codigo ? l.codigo + ' · ' : ''}${l.detalle || 'Sin detalle'}</p>
+                <p class="producto-info">${l.codigo ? l.codigo + ' · ' : ''}${l.detalle || 'Sin detalle'} · x${l.cantidad || 1}</p>
               </div>
               <span class="monto-linea">${formatoMoneda(l.monto)}</span>
             </div>
