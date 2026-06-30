@@ -1,0 +1,22 @@
+{
+  "name": "Mis Clientas - Natura & Avon",
+  "short_name": "Mis Clientas",
+  "description": "Gestión de pedidos y pagos de clientas Natura y Avon",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FBF6F2",
+  "theme_color": "#C9436B",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "avon-natura.jpeg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "avon-natura.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
