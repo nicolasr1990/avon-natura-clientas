@@ -1,548 +1,699 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Mis Clientas</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#C9436B">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Mis Clientas">
-<link rel="apple-touch-icon" href="avon-natura.jpeg">
-<style>
-  :root {
-    --rosa: #C9436B;
-    --rosa-suave: #F4DDE4;
-    --: #FBF6F2;
-    --tinta: #2E2530;
-    --tinta-suave: #7A6E7E;
-    --verde-ok: #4C8C6B;
-    --naranja-alerta: #D88A3F;
-    --borde: #E8DEE2;
-    --blanco: #FFFFFF;
-  }
-
-  * { box-sizing: border-box; }
-
-  body {
-    margin: 0;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: var(--crema);
-    color: var(--tinta);
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .header {
-    background: var(--rosa);
-    color: var(--blanco);
-    padding: 18px 16px 16px;
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  }
-
-  .header h1 {
-    font-family: Georgia, 'Times New Roman', serif;
-    font-size: 22px;
-    margin: 0 0 2px;
-    font-weight: 600;
-    letter-spacing: 0.3px;
-  }
-
-  .header .sub {
-    font-size: 12.5px;
-    opacity: 0.9;
-    margin: 0;
-  }
-
-  .ciclo-bar {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 12px;
-    background: rgba(255,255,255,0.15);
-    border-radius: 10px;
-    padding: 8px 10px;
-    flex-wrap: wrap;
-  }
-
-  .ciclo-bar label {
-    font-size: 12.5px;
-    white-space: nowrap;
-    width: 100%;
-    margin-bottom: 2px;
-  }
-
-  .ciclo-bar input {
-    border: none;
-    border-radius: 6px;
-    padding: 6px 8px;
-    font-size: 14px;
-    text-align: center;
-    font-family: inherit;
-  }
-
-  .ciclo-bar input#cicloNumero { width: 55px; }
-  .ciclo-bar input#cicloAnio { width: 65px; }
-
-  .ciclo-bar .sep {
-    font-size: 14px;
-    opacity: 0.8;
-  }
-
-  .ciclo-bar .preview {
-    width: 100%;
-    font-size: 12px;
-    opacity: 0.9;
-    margin-top: 4px;
-  }
-
-  .container {
-    padding: 14px;
-    max-width: 480px;
-    margin: 0 auto;
-    padding-bottom: 90px;
-  }
-
-  .search-box {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 14px;
-  }
-
-  .search-box input {
-    flex: 1;
-    padding: 12px 14px;
-    border: 1.5px solid var(--borde);
-    border-radius: 12px;
-    font-size: 15px;
-    background: var(--blanco);
-  }
-
-  .search-box input:focus {
-    outline: none;
-    border-color: var(--rosa);
-  }
-
-  .btn {
-    border: none;
-    border-radius: 12px;
-    padding: 12px 16px;
-    font-size: 14.5px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.08s ease, opacity 0.15s ease;
-  }
-
-  .btn:active { transform: scale(0.97); }
-
-  .btn-primary { background: var(--rosa); color: var(--blanco); }
-  .btn-secondary { background: var(--rosa-suave); color: var(--rosa); }
-  .btn-block { width: 100%; }
-  .btn-ghost { background: transparent; color: var(--tinta-suave); border: 1.5px solid var(--borde); }
-
-  .card {
-    background: var(--blanco);
-    border-radius: 14px;
-    padding: 14px 16px;
-    margin-bottom: 10px;
-    border: 1px solid var(--borde);
-    cursor: pointer;
-    transition: box-shadow 0.15s ease;
-  }
-
-  .card:active { box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
-
-  .card-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .clienta-nombre {
-    font-weight: 600;
-    font-size: 15.5px;
-    margin: 0 0 2px;
-  }
-
-  .clienta-meta {
-    font-size: 12.5px;
-    color: var(--tinta-suave);
-    margin: 0;
-  }
-
-  .badge {
-    font-size: 11.5px;
-    font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 20px;
-    white-space: nowrap;
-  }
-
-  .badge-pendiente { background: #FCE8D6; color: var(--naranja-alerta); }
-  .badge-parcial { background: #FCE8D6; color: var(--naranja-alerta); }
-  .badge-pagado { background: #DCEFE3; color: var(--verde-ok); }
-
-  .empty-state {
-    text-align: center;
-    padding: 50px 20px;
-    color: var(--tinta-suave);
-  }
-
-  .empty-state .icon { font-size: 38px; margin-bottom: 8px; }
-  .empty-state p { font-size: 14px; margin: 4px 0; }
-
-  .fab {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 58px;
-    height: 58px;
-    border-radius: 50%;
-    background: var(--rosa);
-    color: var(--blanco);
-    border: none;
-    font-size: 28px;
-    box-shadow: 0 4px 14px rgba(201,67,107,0.4);
-    cursor: pointer;
-    z-index: 40;
-  }
-
-  .fab:active { transform: scale(0.95); }
-
-  /* Modal / pantalla de detalle */
-  .sheet-overlay {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(46,37,48,0.45);
-    z-index: 100;
-  }
-
-  .sheet-overlay.open { display: block; }
-
-  .sheet {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: var(--crema);
-    border-radius: 20px 20px 0 0;
-    max-height: 88vh;
-    overflow-y: auto;
-    padding: 18px 16px 24px;
-    z-index: 101;
-    transform: translateY(100%);
-    transition: transform 0.25s ease;
-  }
-
-  .sheet.open { transform: translateY(0); }
-
-  .sheet-handle {
-    width: 40px;
-    height: 4px;
-    background: var(--borde);
-    border-radius: 4px;
-    margin: 0 auto 14px;
-  }
-
-  .sheet h2 {
-    font-family: Georgia, serif;
-    font-size: 19px;
-    margin: 0 0 4px;
-  }
-
-  .sheet .close-x {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    font-size: 22px;
-    color: var(--tinta-suave);
-    background: none;
-    border: none;
-    cursor: pointer;
-  }
-
-  .field {
-    margin-bottom: 14px;
-  }
-
-  .field label {
-    display: block;
-    font-size: 12.5px;
-    font-weight: 600;
-    color: var(--tinta-suave);
-    margin-bottom: 5px;
-  }
-
-  .field input, .field textarea, .field select {
-    width: 100%;
-    padding: 11px 12px;
-    border: 1.5px solid var(--borde);
-    border-radius: 10px;
-    font-size: 15px;
-    background: var(--blanco);
-    font-family: inherit;
-  }
-
-  .field input:focus, .field textarea:focus, .field select:focus {
-    outline: none;
-    border-color: var(--rosa);
-  }
-
-  .saldo-grande {
-    text-align: center;
-    padding: 16px;
-    background: var(--rosa-suave);
-    border-radius: 14px;
-    margin-bottom: 16px;
-  }
-
-  .saldo-grande .monto {
-    font-family: Georgia, serif;
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--rosa);
-  }
-
-  .saldo-grande .label {
-    font-size: 12px;
-    color: var(--tinta-suave);
-    margin-top: 2px;
-  }
-
-  .pedido-item {
-    background: var(--blanco);
-    border: 1px solid var(--borde);
-    border-radius: 12px;
-    padding: 12px 14px;
-    margin-bottom: 8px;
-  }
-
-  .pedido-item .top-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 4px;
-  }
-
-  .pedido-item .ciclo-tag {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--tinta-suave);
-    text-transform: uppercase;
-  }
-
-  .pedido-item .detalle {
-    font-size: 13.5px;
-    color: var(--tinta);
-    margin: 4px 0;
-  }
-
-  .pedido-item .monto-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 13px;
-    margin-top: 6px;
-  }
-
-  .tabs {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 14px;
-  }
-
-  .tab {
-    flex: 1;
-    text-align: center;
-    padding: 9px 0;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    background: var(--blanco);
-    color: var(--tinta-suave);
-    border: 1.5px solid var(--borde);
-    cursor: pointer;
-  }
-
-  .tab.active {
-    background: var(--rosa);
-    color: var(--blanco);
-    border-color: var(--rosa);
-  }
-
-  .toast {
-    position: fixed;
-    bottom: 90px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--tinta);
-    color: var(--blanco);
-    padding: 11px 20px;
-    border-radius: 30px;
-    font-size: 13.5px;
-    z-index: 200;
-    opacity: 0;
-    transition: opacity 0.25s ease;
-    pointer-events: none;
-    white-space: nowrap;
-  }
-
-  .toast.show { opacity: 1; }
-
-  .loader {
-    text-align: center;
-    padding: 30px;
-    color: var(--tinta-suave);
-    font-size: 13.5px;
-  }
-
-  .small-link {
-    text-align: center;
-    font-size: 13px;
-    color: var(--rosa);
-    margin-top: 10px;
-    cursor: pointer;
-    font-weight: 600;
-  }
-
-  /* ===== Pantalla Cargar Orden ===== */
-  .orden-link-bar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 14px;
-  }
-
-  .orden-link-bar .btn {
-    flex: 1;
-    font-size: 12.5px;
-    padding: 11px 6px;
-    white-space: nowrap;
-  }
-
-  .linea-form {
-    background: var(--blanco);
-    border: 1.5px solid var(--borde);
-    border-radius: 14px;
-    padding: 14px;
-    margin-bottom: 14px;
-  }
-
-  .linea-form .campo-clienta {
-    position: relative;
-  }
-
-  .resumen-orden {
-    background: var(--rosa-suave);
-    border-radius: 14px;
-    padding: 12px 14px;
-    margin-bottom: 14px;
-  }
-
-  .resumen-orden .total-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-  }
-
-  .resumen-orden .total-row .label {
-    font-size: 12.5px;
-    color: var(--tinta-suave);
-  }
-
-  .resumen-orden .total-row .monto {
-    font-family: Georgia, serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--rosa);
-  }
-
-  .linea-cargada {
-    background: var(--blanco);
-    border: 1px solid var(--borde);
-    border-radius: 12px;
-    padding: 11px 13px;
-    margin-bottom: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .linea-cargada .info {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .linea-cargada .cliente-nombre {
-    font-size: 13.5px;
-    font-weight: 600;
-    margin: 0 0 2px;
-  }
-
-  .linea-cargada .producto-info {
-    font-size: 12px;
-    color: var(--tinta-suave);
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .linea-cargada .monto-linea {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--tinta);
-    white-space: nowrap;
-  }
-
-  .linea-cargada .borrar-linea {
-    background: none;
-    border: none;
-    color: var(--tinta-suave);
-    font-size: 18px;
-    cursor: pointer;
-    padding: 2px 4px;
-  }
-
-  .grupo-clienta-header {
-    font-size: 11.5px;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: var(--tinta-suave);
-    margin: 14px 0 6px;
-    display: flex;
-    justify-content: space-between;
-  }
-
-  .grupo-clienta-header .subtotal {
-    color: var(--rosa);
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Mis Clientas · Neumorfismo</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#C9436B">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Mis Clientas">
+  <link rel="apple-touch-icon" href="avon-natura.jpeg">
+  <style>
+    /* ===== RESET Y VARIABLES NEUMORFISMO ===== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --fondo: #e0e5ec;
+      --sombra-clara: #ffffff;
+      --sombra-oscura: #a3b1c6;
+      --rosa: #C9436B;
+      --rosa-suave: #f3d7e0;
+      --tinta: #2a2e3a;
+      --tinta-suave: #5a6270;
+      --blanco: #ffffff;
+      --borde: #d1d9e6;
+      --verde-ok: #3a7a5a;
+      --naranja-alerta: #c27a3a;
+      --radio: 24px;
+      --radio-peq: 14px;
+      --sombra: 8px 8px 16px #a3b1c6, -8px -8px 16px #ffffff;
+      --sombra-inset: inset 4px 4px 8px #a3b1c6, inset -4px -4px 8px #ffffff;
+    }
+
+    body {
+      background: var(--fondo);
+      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: var(--tinta);
+      -webkit-tap-highlight-color: transparent;
+      padding: 0;
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    /* ===== SCROLL ===== */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--fondo); }
+    ::-webkit-scrollbar-thumb { background: var(--rosa); border-radius: 20px; }
+
+    /* ===== HEADER NEUMORFICO ===== */
+    .header {
+      background: var(--fondo);
+      padding: 20px 18px 14px;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      border-bottom: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .header h1 {
+      font-family: 'Times New Roman', Georgia, serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--rosa);
+      letter-spacing: -0.2px;
+      margin: 0 0 2px;
+      text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+    }
+
+    .header .sub {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--tinta-suave);
+      margin: 0;
+      opacity: 0.8;
+    }
+
+    /* ===== CICLO BAR ===== */
+    .ciclo-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px 10px;
+      margin-top: 14px;
+      background: var(--fondo);
+      border-radius: var(--radio);
+      padding: 10px 14px;
+      box-shadow: var(--sombra-inset);
+    }
+
+    .ciclo-bar label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--tinta-suave);
+      letter-spacing: 0.3px;
+      width: 100%;
+      margin-bottom: 2px;
+    }
+
+    .ciclo-bar input {
+      border: none;
+      background: var(--fondo);
+      box-shadow: var(--sombra-inset);
+      border-radius: 40px;
+      padding: 8px 12px;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      color: var(--tinta);
+      width: 60px;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .ciclo-bar input#cicloAnio { width: 70px; }
+
+    .ciclo-bar .sep {
+      font-size: 16px;
+      color: var(--tinta-suave);
+      opacity: 0.5;
+    }
+
+    .ciclo-bar .preview {
+      width: 100%;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--tinta-suave);
+      margin-top: 4px;
+      text-align: right;
+      letter-spacing: 0.3px;
+    }
+
+    /* ===== BOTONES NEUMORFICOS ===== */
+    .btn {
+      border: none;
+      border-radius: 40px;
+      padding: 12px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      background: var(--fondo);
+      box-shadow: var(--sombra);
+      color: var(--tinta);
+      cursor: pointer;
+      transition: all 0.12s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: inherit;
+      letter-spacing: 0.2px;
+    }
+
+    .btn:active {
+      box-shadow: var(--sombra-inset);
+      transform: scale(0.97);
+    }
+
+    .btn-primary {
+      background: var(--rosa);
+      color: white;
+      box-shadow: 6px 6px 14px #a3b1c6, -6px -6px 14px #ffffff;
+    }
+
+    .btn-primary:active {
+      box-shadow: inset 4px 4px 8px #962d4f, inset -4px -4px 8px #e0597e;
+    }
+
+    .btn-secondary {
+      background: var(--fondo);
+      color: var(--rosa);
+      box-shadow: var(--sombra);
+    }
+
+    .btn-secondary:active {
+      box-shadow: var(--sombra-inset);
+    }
+
+    .btn-block { width: 100%; justify-content: center; }
+    .btn-ghost {
+      background: transparent;
+      box-shadow: none;
+      color: var(--tinta-suave);
+      border: 1px solid #d1d9e6;
+    }
+    .btn-ghost:active { box-shadow: var(--sombra-inset); }
+
+    /* ===== CONTAINER ===== */
+    .container {
+      padding: 14px 14px 100px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ===== SEARCH ===== */
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .search-box input {
+      flex: 1;
+      border: none;
+      background: var(--fondo);
+      box-shadow: var(--sombra-inset);
+      border-radius: 40px;
+      padding: 14px 18px;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--tinta);
+      outline: none;
+    }
+
+    .search-box input::placeholder {
+      color: var(--tinta-suave);
+      opacity: 0.5;
+    }
+
+    /* ===== CARD (neumorfica) ===== */
+    .card {
+      background: var(--fondo);
+      border-radius: var(--radio);
+      padding: 16px 18px;
+      margin-bottom: 12px;
+      box-shadow: var(--sombra);
+      cursor: pointer;
+      transition: 0.15s ease;
+      border: none;
+    }
+
+    .card:active {
+      box-shadow: var(--sombra-inset);
+      transform: scale(0.98);
+    }
+
+    .card-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .clienta-nombre {
+      font-weight: 700;
+      font-size: 16px;
+      margin: 0;
+      color: var(--tinta);
+    }
+
+    .clienta-meta {
+      font-size: 13px;
+      color: var(--tinta-suave);
+      margin: 4px 0 0;
+      opacity: 0.8;
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 14px;
+      border-radius: 40px;
+      background: var(--fondo);
+      box-shadow: var(--sombra-inset);
+      letter-spacing: 0.3px;
+    }
+
+    .badge-pendiente { color: var(--naranja-alerta); }
+    .badge-parcial { color: var(--naranja-alerta); }
+    .badge-pagado { color: var(--verde-ok); }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--tinta-suave);
+      background: var(--fondo);
+      border-radius: var(--radio);
+      box-shadow: var(--sombra-inset);
+    }
+
+    .empty-state .icon { font-size: 38px; margin-bottom: 8px; opacity: 0.7; }
+    .empty-state p { font-size: 14px; margin: 4px 0; font-weight: 500; }
+
+    /* ===== FAB ===== */
+    .fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      background: var(--fondo);
+      box-shadow: 8px 8px 18px #a3b1c6, -8px -8px 18px #ffffff;
+      color: var(--rosa);
+      border: none;
+      font-size: 30px;
+      cursor: pointer;
+      z-index: 40;
+      transition: 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .fab:active {
+      box-shadow: var(--sombra-inset);
+      transform: scale(0.94);
+    }
+
+    /* ===== SHEETS (MODALES) ===== */
+    .sheet-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.2);
+      backdrop-filter: blur(2px);
+      z-index: 100;
+    }
+
+    .sheet-overlay.open { display: block; }
+
+    .sheet {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--fondo);
+      border-radius: 32px 32px 0 0;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 22px 18px 30px;
+      z-index: 101;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 -12px 30px rgba(0,0,0,0.08);
+      border-top: 1px solid rgba(255,255,255,0.5);
+    }
+
+    .sheet.open { transform: translateY(0); }
+
+    .sheet-handle {
+      width: 44px;
+      height: 5px;
+      background: var(--borde);
+      border-radius: 20px;
+      margin: 0 auto 18px;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .sheet .close-x {
+      position: absolute;
+      top: 14px;
+      right: 20px;
+      font-size: 24px;
+      background: none;
+      border: none;
+      color: var(--tinta-suave);
+      cursor: pointer;
+      opacity: 0.6;
+    }
+
+    .sheet h2 {
+      font-family: 'Times New Roman', Georgia, serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--rosa);
+      margin: 0 0 6px;
+    }
+
+    /* ===== CAMPOS NEUMORFICOS ===== */
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--tinta-suave);
+      margin-bottom: 6px;
+      letter-spacing: 0.3px;
+    }
+
+    .field input,
+    .field textarea,
+    .field select {
+      width: 100%;
+      border: none;
+      background: var(--fondo);
+      box-shadow: var(--sombra-inset);
+      border-radius: 40px;
+      padding: 14px 18px;
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--tinta);
+      outline: none;
+      transition: 0.1s;
+    }
+
+    .field textarea {
+      border-radius: var(--radio-peq);
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .field input:focus,
+    .field textarea:focus {
+      box-shadow: var(--sombra-inset), 0 0 0 2px var(--rosa);
+    }
+
+    /* ===== SALDO GRANDE ===== */
+    .saldo-grande {
+      background: var(--fondo);
+      box-shadow: var(--sombra-inset);
+      border-radius: var(--radio);
+      padding: 18px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .saldo-grande .monto {
+      font-family: Georgia, serif;
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--rosa);
+    }
+
+    .saldo-grande .label {
+      font-size: 12px;
+      color: var(--tinta-suave);
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    /* ===== PEDIDO ITEM ===== */
+    .pedido-item {
+      background: var(--fondo);
+      box-shadow: var(--sombra);
+      border-radius: var(--radio);
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      border: none;
+    }
+
+    .pedido-item .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .pedido-item .ciclo-tag {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--tinta-suave);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .pedido-item .detalle {
+      font-size: 14px;
+      margin: 8px 0 6px;
+      font-weight: 500;
+    }
+
+    .pedido-item .monto-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    /* ===== TABS ===== */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 10px 0;
+      border-radius: 40px;
+      font-size: 13px;
+      font-weight: 600;
+      background: var(--fondo);
+      box-shadow: var(--sombra);
+      color: var(--tinta-suave);
+      cursor: pointer;
+      border: none;
+    }
+
+    .tab.active {
+      background: var(--rosa);
+      color: white;
+      box-shadow: 6px 6px 14px #a3b1c6, -6px -6px 14px #ffffff;
+    }
+
+    /* ===== TOAST ===== */
+    .toast {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--tinta);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 40px;
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 200;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      pointer-events: none;
+      white-space: nowrap;
+      box-shadow: var(--sombra);
+    }
+
+    .toast.show { opacity: 1; }
+
+    /* ===== ORDEN LINK BAR ===== */
+    .orden-link-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .orden-link-bar .btn {
+      flex: 1;
+      font-size: 12px;
+      padding: 10px 6px;
+    }
+
+    /* ===== LINEAS DE ORDEN ===== */
+    .linea-form {
+      background: var(--fondo);
+      box-shadow: var(--sombra-inset);
+      border-radius: var(--radio);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .resumen-orden {
+      background: var(--fondo);
+      box-shadow: var(--sombra-inset);
+      border-radius: var(--radio);
+      padding: 14px 18px;
+      margin-bottom: 18px;
+    }
+
+    .resumen-orden .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .resumen-orden .total-row .label {
+      font-size: 13px;
+      color: var(--tinta-suave);
+      font-weight: 500;
+    }
+
+    .resumen-orden .total-row .monto {
+      font-family: Georgia, serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--rosa);
+    }
+
+    .linea-cargada {
+      background: var(--fondo);
+      box-shadow: var(--sombra);
+      border-radius: var(--radio-peq);
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .linea-cargada .info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .linea-cargada .cliente-nombre {
+      font-size: 13px;
+      font-weight: 700;
+      margin: 0 0 2px;
+    }
+
+    .linea-cargada .producto-info {
+      font-size: 12px;
+      color: var(--tinta-suave);
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .linea-cargada .monto-linea {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--tinta);
+    }
+
+    .linea-cargada .borrar-linea {
+      background: none;
+      border: none;
+      color: var(--tinta-suave);
+      font-size: 20px;
+      cursor: pointer;
+      opacity: 0.5;
+      padding: 0 4px;
+    }
+
+    .grupo-clienta-header {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--tinta-suave);
+      margin: 16px 0 6px;
+      display: flex;
+      justify-content: space-between;
+      letter-spacing: 0.5px;
+    }
+
+    .grupo-clienta-header .subtotal {
+      color: var(--rosa);
+    }
+
+    .loader {
+      text-align: center;
+      padding: 30px;
+      color: var(--tinta-suave);
+      font-weight: 500;
+    }
+
+    .small-link {
+      text-align: center;
+      font-size: 13px;
+      color: var(--rosa);
+      margin-top: 10px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    /* ===== CORRECCIONES DE FONDO EN MODALES ===== */
+    /* Cada sheet tiene su propio fondo, ya no es transparente */
+    .sheet p, .sheet .clienta-meta, .sheet .label, .sheet .detalle {
+      color: var(--tinta);
+    }
+
+    .sheet .empty-state {
+      background: var(--fondo);
+      box-shadow: var(--sombra-inset);
+    }
+
+    .sheet .pedido-item {
+      background: var(--fondo);
+      box-shadow: var(--sombra);
+    }
+
+    /* Ajuste para datalist */
+    input[list]::-webkit-calendar-picker-indicator {
+      opacity: 0.4;
+      filter: invert(0.2);
+    }
+  </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>Mis Clientas</h1>
-  <p class="sub">Avon &amp; Natura · Gestión de pedidos y pagos</p>
+  <h1>🌸 Mis Clientas</h1>
+  <p class="sub">Avon &amp; Natura · Gestión neumórfica</p>
   <div class="ciclo-bar">
-    <label>Ciclo actual</label>
+    <label>📆 Ciclo actual</label>
     <input type="number" id="cicloNumero" value="9" inputmode="numeric" placeholder="N°">
     <span class="sep">·</span>
     <input type="number" id="cicloAnio" value="2026" inputmode="numeric" placeholder="Año">
-    <div class="preview" id="cicloPreview">Ciclo 9 - 2026</div>
+    <div class="preview" id="cicloPreview">Ciclo 9 · 2026</div>
   </div>
 </div>
 
 <div class="container">
   <div class="orden-link-bar">
     <button class="btn btn-primary" id="cargarOrdenBtn">📝 Cargar orden</button>
-    <button class="btn btn-secondary" id="verDeudorasBtn">Deudoras</button>
-    <button class="btn btn-secondary" id="verOrdenLink">Ver orden</button>
+    <button class="btn btn-secondary" id="verDeudorasBtn">💰 Deudoras</button>
+    <button class="btn btn-secondary" id="verOrdenLink">📋 Ver orden</button>
   </div>
 
   <div class="search-box">
-    <input type="text" id="buscador" placeholder="Buscar clienta...">
+    <input type="text" id="buscador" placeholder="🔍 Buscar clienta...">
   </div>
 
   <div id="listaClientas">
@@ -552,10 +703,10 @@
 
 <button class="fab" id="nuevaClientaFab">+</button>
 
-<!-- ===== Sheet: Nueva clienta ===== -->
+<!-- ===== SHEET: NUEVA CLIENTA ===== -->
 <div class="sheet-overlay" id="overlayNuevaClienta"></div>
 <div class="sheet" id="sheetNuevaClienta">
-  <button class="close-x" data-close="NuevaClienta">×</button>
+  <button class="close-x" data-close="NuevaClienta">✕</button>
   <div class="sheet-handle"></div>
   <h2>Nueva clienta</h2>
   <div class="field">
@@ -573,10 +724,10 @@
   <button class="btn btn-primary btn-block" id="guardarClientaBtn">Guardar clienta</button>
 </div>
 
-<!-- ===== Sheet: Detalle de clienta ===== -->
+<!-- ===== SHEET: DETALLE CLIENTA ===== -->
 <div class="sheet-overlay" id="overlayDetalle"></div>
 <div class="sheet" id="sheetDetalle">
-  <button class="close-x" data-close="Detalle">×</button>
+  <button class="close-x" data-close="Detalle">✕</button>
   <div class="sheet-handle"></div>
   <h2 id="detalleNombre">Clienta</h2>
   <p class="clienta-meta" id="detalleTelefono"></p>
@@ -590,12 +741,11 @@
     <div class="loader">Cargando historial...</div>
   </div>
 </div>
-</div>
 
-<!-- ===== Sheet: Registrar pago ===== -->
+<!-- ===== SHEET: REGISTRAR PAGO ===== -->
 <div class="sheet-overlay" id="overlayPago"></div>
 <div class="sheet" id="sheetPago">
-  <button class="close-x" data-close="Pago">×</button>
+  <button class="close-x" data-close="Pago">✕</button>
   <div class="sheet-handle"></div>
   <h2>Registrar pago</h2>
   <p class="clienta-meta" id="pagoPedidoLabel"></p>
@@ -614,10 +764,10 @@
   <button class="btn btn-primary btn-block" id="guardarPagoBtn">Guardar pago</button>
 </div>
 
-<!-- ===== Sheet: Cargar orden del ciclo ===== -->
+<!-- ===== SHEET: CARGAR ORDEN ===== -->
 <div class="sheet-overlay" id="overlayOrden"></div>
 <div class="sheet" id="sheetOrden" style="max-height: 92vh;">
-  <button class="close-x" data-close="Orden">×</button>
+  <button class="close-x" data-close="Orden">✕</button>
   <div class="sheet-handle"></div>
   <h2>Cargar orden del ciclo</h2>
   <p class="clienta-meta" id="ordenCicloLabel" style="margin-bottom: 14px;"></p>
@@ -659,10 +809,10 @@
   <button class="btn btn-secondary btn-block" id="cerrarOrdenBtn" style="margin-top: 16px;">Guardar orden completa</button>
 </div>
 
-<!-- ===== Sheet: Ver orden de un ciclo (consulta) ===== -->
+<!-- ===== SHEET: VER ORDEN ===== -->
 <div class="sheet-overlay" id="overlayVerOrden"></div>
 <div class="sheet" id="sheetVerOrden">
-  <button class="close-x" data-close="VerOrden">×</button>
+  <button class="close-x" data-close="VerOrden">✕</button>
   <div class="sheet-handle"></div>
   <h2 id="verOrdenTitulo">Orden del ciclo</h2>
   <div class="resumen-orden">
@@ -715,9 +865,7 @@
   document.getElementById('overlayOrden').addEventListener('click', () => cerrarSheet('Orden'));
   document.getElementById('overlayVerOrden').addEventListener('click', () => cerrarSheet('VerOrden'));
 
-  // ---------- Ciclo actual (número + mes + año) ----------
-  // El ciclo se guarda como texto compuesto, ej: "Ciclo 1 - ENE/26", para que
-  // no se mezclen ciclos del mismo número de distintas rondas/años.
+  // ---------- Ciclo actual ----------
   function obtenerCicloActual() {
     const num = document.getElementById('cicloNumero').value || '9';
     const anio = document.getElementById('cicloAnio').value || '2026';
@@ -907,7 +1055,7 @@
   });
 
   // ---------- Cargar orden del ciclo ----------
-  let lineasOrdenActual = []; // líneas ya cargadas en esta sesión (visual, antes de guardar)
+  let lineasOrdenActual = [];
   let ultimaClienteUsada = '';
 
   function poblarDatalistClientas() {
@@ -941,7 +1089,6 @@
       return;
     }
 
-    // Agrupar por clienta para mostrar subtotales
     const porClienta = {};
     lineasOrdenActual.forEach(l => {
       if (!porClienta[l.nombreClienta]) porClienta[l.nombreClienta] = [];
@@ -1001,8 +1148,6 @@
       });
 
       ultimaClienteUsada = clienta.nombre;
-      // Mantenemos la clienta cargada para agregar el siguiente producto rápido,
-      // pero limpiamos código/detalle/monto para la próxima línea.
       document.getElementById('lineaCodigo').value = '';
       document.getElementById('lineaDetalle').value = '';
       document.getElementById('lineaCantidad').value = '1';
@@ -1082,7 +1227,6 @@
     }
   }
 
-  // ---------- Inicio ----------
   document.getElementById('verOrdenLink').addEventListener('click', () => {
     verOrdenDeCiclo(obtenerCicloActual());
   });
@@ -1090,13 +1234,9 @@
   actualizarPreviewCiclo();
   cargarClientas();
 
-  // Registro del Service Worker para PWA
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(err => {
-      console.warn('SW no registrado:', err);
-    });
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
   }
-
 </script>
 
 </body>
