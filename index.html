@@ -1059,6 +1059,7 @@
                 <p class="producto-info">${l.codigo ? l.codigo + ' · ' : ''}${l.detalle || 'Sin detalle'} · x${l.cantidad || 1}</p>
               </div>
               <span class="monto-linea">${formatoMoneda(l.monto)}</span>
+              <button class="borrar-linea" onclick="borrarLineaOrden('${l.id}', '${ciclo}')">×</button>
             </div>
           `;
         });
@@ -1066,6 +1067,18 @@
       document.getElementById('verOrdenContenido').innerHTML = html;
     } catch (err) {
       document.getElementById('verOrdenContenido').innerHTML = '<div class="loader">Error al cargar la orden.</div>';
+    }
+  }
+
+  async function borrarLineaOrden(idLinea, ciclo) {
+    if (!confirm('¿Borrar esta línea? Se recalculará la deuda de la clienta.')) return;
+    try {
+      await apiPost('eliminarLineaOrden', { idLinea });
+      await apiPost('cerrarOrdenCiclo', { ciclo });
+      mostrarToast('Línea eliminada y deuda recalculada');
+      verOrdenDeCiclo(ciclo);
+    } catch (err) {
+      mostrarToast('Error al eliminar la línea');
     }
   }
 
