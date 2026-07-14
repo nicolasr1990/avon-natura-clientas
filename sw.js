@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mis-clientas-v1';
+const CACHE_NAME = 'mis-clientas-v2';
 const ASSETS = [
   './index.html',
   './avon-natura.jpeg',
@@ -27,7 +27,24 @@ self.addEventListener('fetch', event => {
     event.respondWith(fetch(event.request));
     return;
   }
-  // Para el resto: cache first, fallback a red
+
+  // index.html → network first: siempre intenta traer la versión nueva del
+  // servidor; solo usa cache si no hay conexión. Así los cambios se aplican
+  // automáticamente sin tener que desinstalar la app.
+  if (event.request.url.endsWith('index.html') || event.request.url.endsWith('/')) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Resto de assets (imagen, manifest) → cache first
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request))
   );
