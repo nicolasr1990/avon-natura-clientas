@@ -1185,7 +1185,7 @@
     abrirSheet('VerOrden');
 
     try {
-      const orden = await apiGet('verOrdenCiclo', { ciclo });
+      const orden = await apiGet('verOrdenCicloCompleto', { ciclo });
       document.getElementById('verOrdenTotal').textContent = formatoMoneda(orden.totalGeneral);
 
       if (orden.clientas.length === 0) {
